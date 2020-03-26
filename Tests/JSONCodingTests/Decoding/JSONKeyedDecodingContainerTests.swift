@@ -22,7 +22,7 @@ class JSONKeyedDecodingContainerTests: XCTestCase {
     }
   }
   
-  func testContains() throws {
+  func testContains() {
     let impl = JSONDecoderImpl(userInfo: [:], from: .object(["hello": .null, "world": .null]), codingPath: [])
     
     enum CodingKeys: String, CodingKey {
@@ -30,9 +30,10 @@ class JSONKeyedDecodingContainerTests: XCTestCase {
       case haha
     }
     
-    let container = try impl.container(keyedBy: CodingKeys.self)
-    XCTAssertEqual(container.contains(.hello), true)
-    XCTAssertEqual(container.contains(.haha), false)
+    var container: KeyedDecodingContainer<CodingKeys>?
+    XCTAssertNoThrow(container = try impl.container(keyedBy: CodingKeys.self))
+    XCTAssertEqual(try XCTUnwrap(container).contains(.hello), true)
+    XCTAssertEqual(try XCTUnwrap(container).contains(.haha), false)
   }
   
   // MARK: - Null -
@@ -80,14 +81,11 @@ class JSONKeyedDecodingContainerTests: XCTestCase {
       case hello
     }
     
-    do {
-      let container = try impl.container(keyedBy: CodingKeys.self)
-      let result = try container.decodeNil(forKey: .hello)
-      XCTAssertEqual(result, false)
-    }
-    catch {
-      XCTFail("Unexpected error: \(error)")
-    }
+    var container: KeyedDecodingContainer<CodingKeys>?
+    XCTAssertNoThrow(container = try impl.container(keyedBy: CodingKeys.self))
+    var result: Bool?
+    XCTAssertNoThrow(result = try XCTUnwrap(container).decodeNil(forKey: .hello))
+    XCTAssertEqual(result, false)
   }
 
   // MARK: - String -
